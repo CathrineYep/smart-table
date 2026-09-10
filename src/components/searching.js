@@ -1,8 +1,7 @@
 import { createComparison, rules } from "../lib/compare.js";
 
-export function initSearching(searchField) {
+export function initSearching(elements, searchField) {
   // @todo: #5.1 — настроить компаратор
-  // Создаём компаратор специально для поиска
   const searchCompare = createComparison(
     ["skipEmptyTargetValues"], // Игнорируем пустые значения
     [
@@ -17,10 +16,12 @@ export function initSearching(searchField) {
   return (data, state, action) => {
     // @todo: #5.2 — применить компаратор
     const searchValue = state[searchField] || "".trim(); // Получаем значение поиска из state
+
     // Если строка поиска пустая — возвращаем данные без изменений
     if (!searchValue) {
       return data;
     }
+
     // Применяем компаратор: фильтруем данные по значению поиска
     return data.filter((row) =>
       searchCompare(row, { [searchField]: searchValue }),
