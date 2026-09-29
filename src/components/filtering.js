@@ -1,30 +1,48 @@
-import { createComparison, defaultRules } from "../lib/compare.js";
+export function initFiltering(elements) {
+  const updateIndexes = (elements, indexes) => {
+    Object.keys(indexes).forEach((elementName) => {
+      elements[elementName].append(
+        ...Object.values(indexes[elementName]).map((name) => {
+          const el = document.createElement("option");
+          el.textContent = name;
+          el.value = name;
+          return el;
+        }),
+      );
+    });
+  };
 
-// @todo: #4.3 — настроить компаратор
-const compare = createComparison(defaultRules);
+  const applyFiltering = (query, state, action) => {
+    if (action?.name === "clear") {
+      const fieldName = action.dataset?.field;
+      if (fieldName) {
+        const input = Object.values(elements).find(
+          (el) => el?.name === fieldName,
+        );
+        if (input) input.value = "";
+      }
+      return query;
+    }
+    // @todo: #4.5 — отфильтровать данные, используя компаратор
+    const filter = {};
+    Object.keys(elements).forEach((key) => {
+      if (elements[key]) {
+        if (
+          ["INPUT", "SELECT"].includes(elements[key].tagName) &&
+          elements[key].value
+        ) {
+          filter[`filter[${elements[key].name}]`] = elements[key].value;
+        }
+      }
+    });
 
-export function initFiltering(elements, indexes) {
-  // @todo: #4.1 — заполнить выпадающие списки опциями
-  Object.keys(indexes).forEach((elementName) => {
-    elements[elementName].append(
-      ...Object.values(indexes[elementName]).map((name) => {
-        // Создаём элемент <option>
-        const option = document.createElement("option");
+    return Object.keys(filter).length
+      ? Object.assign({}, query, filter)
+      : query;
+  };
 
-        // Устанавливаем значение атрибута value и текстовое содержимое
-        option.value = name;
-        option.textContent = name;
-
-        // Возвращаем созданный элемент — он попадёт в append()
-        return option;
-      }),
-    );
-  });
-
-  return (data, state, action) => {
-    // @todo: #4.2 — обработать очистку поля
-
-    // @todo: #4.5 — отфильтровать данные используя компаратор
-    return data.filter((row) => compare(row, state));
+  return {
+    updateIndexes,
+    applyFiltering,
   };
 }
